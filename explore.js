@@ -25,7 +25,9 @@ function decodeTable(text, filename) {
     const header=firstRow.replace(/"(?:[^"]|"")*"/g,'');
     const delimiters=[',',';','\t'];
     const delimiter=ext==='tsv'?'\t':delimiters.sort((a,b)=>header.split(b).length-header.split(a).length)[0];
-    [columns,...records] = parseCSV(text,delimiter);
+    const parsedRows = parseCSV(text,delimiter);
+    columns = parsedRows[0];
+    records = parsedRows.slice(1);
     columns = columns?.map(c => c.trim());
   }
   if (!columns?.length || !records.length) throw Error('請提供欄名及至少一列資料。');
@@ -91,7 +93,7 @@ function renderExplorer() {
   $('subtitle').textContent='選擇要比較的欄位，查看各組總量與差異。';
   document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('active',b.dataset.page===page));
   if(!dataset){
-    $('content').innerHTML='<section class="card upload-box"><h2>選擇要分析的表格</h2><p>支援 UTF-8 CSV、TSV、JSON。Excel 活頁簿可另存為 CSV。</p><button class="primary" onclick="$(\'file\').click()">匯入資料</button></section>';return;
+    $('content').innerHTML='<section class="card upload-box"><h2>選擇要分析的表格</h2><p>支援 Excel（XLSX、XLS）、CSV、TSV、JSON。</p><button class="primary" onclick="openImport()">匯入資料</button></section>';return;
   }
   const {columns}=dataset;
   const {visible,ranked}=selection(dataset,settings);
@@ -123,31 +125,6 @@ function showDialog(title,body) {
   $('dismiss').onclick=()=>dialog.close();
   if(!dialog.open) dialog.showModal();
 }
-async function readImport(file) {
-  if(!file)return;
-  const version=++latestRead;
-  try{
-    if(file.size>80*1024*1024)throw Error('檔案上限為 80 MB。');
-    const parsed=decodeTable(await file.text(),file.name);
-    if(version!==latestRead)return;
-    draft=parsed;
-    const walmart=['Store','Dept','Date','Weekly_Sales','IsHoliday','XYZ','P50_HW','P50_LGBM'].every(k=>draft.columns.includes(k));
-    showDialog('預覽匯入資料','<p>'+esc(file.name)+' · '+fmt(draft.records.length)+' 筆 · '+draft.columns.length+' 欄</p>'+
-      tableView(draft.columns,draft.records.slice(0,4))+'<label>分析方式<select id="mode"><option value="general">自訂欄位分析</option>'+
-      (walmart?'<option value="walmart" selected>Walmart 預測總覽</option>':'')+'</select></label><button class="primary" id="apply">確認匯入</button>');
-    $('apply').onclick=()=>{
-      try {
-        if($('mode').value==='walmart'){
-          const validated=validateCSV(encodedTable(draft.columns,draft.records,'csv'));
-          rows=validated;demo=false;cutoff='';walmartSource=draft.name+' · '+fmt(rows.length)+' 筆';page='overview';
-          ['store','dept','xyz'].forEach(id=>$(id).value='');options();
-        } else page='explore';
-        dataset=draft;settings=defaults(dataset);render();$('wizard').close();toast('資料已載入');
-      } catch(e){$('dialog-error').textContent=e.message}
-    };
-  } catch(e){if(version===latestRead)toast('匯入失敗：'+e.message)}
-  finally{$('file').value=''}
-}
 function exportData() {
   const general=page==='explore';
   if(general && !dataset)return toast('請先匯入資料。');
@@ -175,9 +152,11 @@ function exportData() {
     setTimeout(()=>URL.revokeObjectURL(url),1000);$('wizard').close();toast('已匯出 '+fmt(records.length)+' 筆');
   };
 }
-$('file').onchange=e=>readImport(e.target.files[0]);
+
 $('export').onclick=exportData;
 syncWorkspace();
+
+
 
 
 
