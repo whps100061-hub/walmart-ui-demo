@@ -11,3 +11,6 @@
 @media(max-width:1100px){.pipeline-strip{grid-template-columns:repeat(3,1fr)}.ribbon-grid{grid-template-columns:1fr}}
 @media(max-width:650px){.input-grid,.audit-flow{grid-template-columns:1fr}.pipeline-strip{grid-template-columns:repeat(2,1fr)}.scope-heading{align-items:flex-start;gap:12px}.ribbon{padding:12px}.ribbon-legend{gap:12px;font-size:12px}.ribbon svg{min-width:560px}.ribbon{overflow:auto}}
 .classification-node{padding:16px 20px;border:1px solid #dce5ef;background:white;border-radius:12px;margin:14px 0}.cv-track{height:14px;border-radius:7px;position:relative;margin:16px 0}.cv-track i{position:absolute;top:-4px;width:22px;height:22px;transform:translateX(-50%);border:3px solid white;border-radius:50%;background:#233c59;box-shadow:0 0 0 1px #233c59}.feature-analysis>div{display:grid;grid-template-columns:150px 1fr 70px;gap:18px;align-items:center;margin:12px 0}.feature-analysis progress{width:100%;accent-color:#268b9a}.feature-analysis{margin-bottom:24px}
+/* Four import roles, including the optional unlabelled target list. */
+.input-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+@media(max-width:650px){.input-grid{grid-template-columns:1fr}}
