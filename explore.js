@@ -67,8 +67,8 @@ function syncWorkspace() {
   const custom=page==='explore';
   document.querySelector('.filters').hidden=custom;
   document.querySelector('footer span:last-child').textContent=custom?'單位依匯入欄位':'金額單位：USD · 80% 名目預測區間';
-  $('source').textContent=custom?(dataset?'自訂資料':'尚未匯入自訂資料'):(demo?'目前使用示範資料':'已載入 Walmart 預測資料');
-  $('source-detail').textContent=custom?(dataset?dataset.name+' · '+fmt(dataset.records.length)+' 筆':'選擇表格即可分析。'):(demo?'目前顯示示範銷售資料。可匯入 Notebook 結果查看實際預測。':walmartSource);
+  $('source').textContent=custom?(dataset?'自訂資料':'尚未匯入自訂資料'):(rows.length?'已載入真實預測資料':'等待匯入真實預測資料');
+  $('source-detail').textContent=custom?(dataset?dataset.name+' · '+fmt(dataset.records.length)+' 筆':'選擇表格即可分析。'):(rows.length?walmartSource:'請提供模型輸出的 CSV、Excel 或 JSON，載入後可查詢整體、XYZ 與單一門市部門。');
 }
 function selection(data,config) {
   const query=config.query.trim().toLowerCase();
@@ -127,7 +127,7 @@ function showDialog(title,body) {
 }
 function exportData() {
   const general=page==='explore';
-  if(general && !dataset)return toast('請先匯入資料。');
+  if(general && !dataset || !general && !rows.length)return toast('請先匯入資料。');
   const filteredRows=general?selection(dataset,settings).visible:filtered();
 
   showDialog('匯出資料','<label>資料範圍<select id="scope"><option value="filtered" '+(filteredRows.length?'': 'disabled')+'>目前篩選明細</option><option value="all">完整資料</option>'+
