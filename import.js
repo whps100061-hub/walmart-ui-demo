@@ -42,6 +42,7 @@ function previewImport(parsed) {
       if ($('mode').value === 'walmart') {
         const validated = validateCSV(encodedTable(draft.columns,draft.records,'csv'));
         rows=validated; demo=false; cutoff=''; walmartSource=draft.name+' · '+fmt(rows.length)+' 筆';
+        if(typeof workflow!=='undefined'){workflow.result=null;workflow.stage='idle';cutoff=rows.map(r=>r.Date).sort()[0];}
         page='overview';
         ['store','dept','xyz'].forEach(id => $(id).value='');
         options();
